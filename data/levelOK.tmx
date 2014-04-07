@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
 <map version="1.0" orientation="orthogonal" width="60" height="18" tilewidth="34" tileheight="34">
  <tileset firstgid="1" name="tiles" tilewidth="34" tileheight="34">
   <image source="../images/tiles.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="50" name="mario_small" tilewidth="32" tileheight="32">
+  <image source="../images/mario_small.png" width="896" height="32"/>
+  <tile id="0">
+   <properties>
+    <property name="Class" value="Player"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="78" name="bloopa" tilewidth="32" tileheight="32">
+  <image source="../images/bloopa.png" width="96" height="48"/>
+  <tile id="0">
+   <properties>
+    <property name="Class" value="Bloopa"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="81" name="goomba" tilewidth="32" tileheight="32">
+  <image source="../images/goomba.png" width="128" height="96"/>
+  <tile id="0">
+   <properties>
+    <property name="Class" value="Goomba"/>
+   </properties>
+  </tile>
  </tileset>
  <imagelayer name="background" width="60" height="18">
   <image source="../images/bg.png"/>
@@ -1094,4 +1117,9 @@
    <tile gid="15"/>
   </data>
  </layer>
+ <objectgroup name="Capa de Objetos 1" width="60" height="18">
+  <object name="mario" gid="50" x="231" y="426"/>
+  <object name="bloopa" gid="78" x="683" y="545"/>
+  <object name="goomba" gid="81" x="549" y="542"/>
+ </objectgroup>
 </map>
