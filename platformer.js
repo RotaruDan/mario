@@ -223,11 +223,54 @@ window.addEventListener("load",function() {
 		init: function(p) {
 			this._super(p,{
 				sheet: "bloopa",  // Setting a sprite sheet sets sprite width and height
-				sprite: "bloopa"
+				sprite: "bloopa",
+				vx: 0,
+				vy: -150,
+				rangeY: 200,
+				gravity: 0,
+				jumpSpeed: -250
 			});
+			this.add('2d');
+
+			this.p.initialY = this.p.y;
+
+			this.on("bump.left,bump.right,bump.bottom",function(collision) {
+				if(collision.obj.isA("Player")) { 
+					Q.stageScene("endGame",1, { label: "Game Over" }); 
+					collision.obj.destroy();
+				}
+			});
+			this.on("bump.top",function(collision) {
+				if(collision.obj.isA("Player")) { 
+					collision.obj.p.vy = -100;
+					this.destroy();
+				}
+			});
+		},
+		step: function(dt) {
+			if(this.p.dead) {
+				this.del('2d, aiBounce');
+				this.p.deadTimer++;
+				if (this.p.deadTimer > 24) {
+					// Dead for 24 frames, remove it.
+					this.destroy();
+				}
+				return;
+			}
+
+			if(this.p.y - this.p.initialY >= this.p.rangeY && this.p.vy > 0) {
+				console.log("11");
+				this.p.vy = -this.p.vy;
+			} 
+			else if(-this.p.y + this.p.initialY >= this.p.rangeY && this.p.vy < 0) {
+				console.log("22");
+				this.p.vy = -this.p.vy;
+			} 
+
+			this.play('jump');
 		}
 	});
-	
+
 	Q.Enemy.extend("Goomba", {
 		init: function(p) {
 			this._super(p,{
@@ -240,17 +283,19 @@ window.addEventListener("load",function() {
 	Q.Sprite.extend("Collectable", {
 		init: function(p) {
 			this._super(p,{
-				sheet: p.sprite,
+				sheet: "coin",
+				sprite: "coin",
 				type: Q.SPRITE_COLLECTABLE,
 				collisionMask: Q.SPRITE_PLAYER,
 				sensor: true,
 				vx: 0,
 				vy: 0,
+				amount: 50,
 				gravity: 0
 			});
-			this.add("animation");
-
+			this.add('animation');
 			this.on("sensor");
+			this.play('shine');
 		},
 
 		// When a Collectable is hit.
@@ -286,25 +331,32 @@ window.addEventListener("load",function() {
 		container.fit(20);
 	});
 
-	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png", function() {
+	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png, coin.png, coin.json", function() {
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
 		Q.compileSheets("goomba.png","goomba.json");
+		Q.compileSheets("coin.png","coin.json");
 		Q.animations("mario_small", {
-			walk_right: { frames: [0,1,2], rate: 1/12, flip: false, loop: true },
-			walk_left: { frames:  [0,1,2], rate: 1/12, flip:"x", loop: true },
-			jump_right: { frames: [4], rate: 1/10, flip: false },
-			jump_left: { frames:  [4], rate: 1/10, flip: "x" },
-			stand_right: { frames:[0], rate: 1/10, flip: false },
-			stand_left: { frames: [0], rate: 1/10, flip:"x" },
-			duck_right: { frames: [6], rate: 1/10, flip: false },
-			duck_left: { frames:  [6], rate: 1/10, flip: "x" }
+			walk_right: { frames: [0,1,2], rate: 1/10, flip: false, loop: true },
+			walk_left: { frames:  [0,1,2], rate: 1/10, flip:"x", loop: true },
+			jump_right: { frames: [4], rate: 1/9, flip: false },
+			jump_left: { frames:  [4], rate: 1/9, flip: "x" },
+			stand_right: { frames:[0], rate: 1/9, flip: false },
+			stand_left: { frames: [0], rate: 1/9, flip:"x" },
+			duck_right: { frames: [6], rate: 1/9, flip: false },
+			duck_left: { frames:  [6], rate: 1/9, flip: "x" }
 		});
 		var EnemyAnimations = {
 			walk: { frames: [0,1], rate: 1/3, loop: true },
-			dead: { frames: [2], rate: 1/10 }
+			dead: { frames: [2], rate: 1/8 }
 		};
-		Q.animations("bloopa", EnemyAnimations);
+		Q.animations("bloopa", {
+			jump: { frames: [0,1], rate: 1/2, loop: true },
+			dead: { frames: [2], rate: 1/8 }
+		});
+		Q.animations("coin", {
+			shine: { frames: [0,1,2], rate: 1/2, loop: true }
+		});
 		Q.animations("goomba", EnemyAnimations);
 		Q.stageScene("levelOK");
 		Q.stageScene('hud', 3, Q('Player').first().p);

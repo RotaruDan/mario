@@ -11,7 +11,15 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="78" name="bloopa" tilewidth="32" tileheight="32">
+ <tileset firstgid="78" name="goomba" tilewidth="32" tileheight="32">
+  <image source="../images/goomba.png" width="128" height="96"/>
+  <tile id="0">
+   <properties>
+    <property name="Class" value="Goomba"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="90" name="bloopa" tilewidth="32" tileheight="48">
   <image source="../images/bloopa.png" width="96" height="48"/>
   <tile id="0">
    <properties>
@@ -19,11 +27,11 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="81" name="goomba" tilewidth="32" tileheight="32">
-  <image source="../images/goomba.png" width="128" height="96"/>
+ <tileset firstgid="93" name="coin" tilewidth="34" tileheight="34">
+  <image source="../images/coin.png" width="102" height="34"/>
   <tile id="0">
    <properties>
-    <property name="Class" value="Goomba"/>
+    <property name="Class" value="Collectable"/>
    </properties>
   </tile>
  </tileset>
@@ -1119,7 +1127,10 @@
  </layer>
  <objectgroup name="Capa de Objetos 1" width="60" height="18">
   <object name="mario" gid="50" x="231" y="426"/>
-  <object name="bloopa" gid="78" x="683" y="545"/>
-  <object name="goomba" gid="81" x="549" y="542"/>
+  <object name="goomba" gid="78" x="549" y="542"/>
+  <object gid="90" x="271" y="544"/>
+  <object gid="93" x="190" y="541"/>
+  <object gid="93" x="162" y="542"/>
+  <object gid="93" x="128" y="542"/>
  </objectgroup>
 </map>
