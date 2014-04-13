@@ -23,6 +23,7 @@ window.addEventListener("load",function() {
 	Q.SPRITE_PLAYER = 1;
 	Q.SPRITE_COLLECTABLE = 2;
 	Q.SPRITE_ENEMY = 4;
+	Q.SPRITE_PRINCESS = 8;
 	Q.Sprite.extend("Player",{
 
 		init: function(p) {
@@ -68,10 +69,8 @@ window.addEventListener("load",function() {
 		},
 
 		resetLevel: function() {
-			Q.stageScene("levelOK");
-			this.p.strength = 100;
-			this.animate({opacity: 1});
-			Q.stageScene('hud', 3, this.p);
+			Q.stageScene("endGame",1, { label: "Game Over!" }); 
+			this.destroy();
 		},
 
 		enemyHit: function(data) {
@@ -162,6 +161,36 @@ window.addEventListener("load",function() {
 		}
 	});
 
+	Q.Sprite.extend("Princess",{
+
+		init: function(p) {
+
+			this._super(p, {
+				sheet: "pincess",  
+				sprite: "princess",
+				type: Q.SPRITE_PRINCESS,
+				collisionMask: Q.SPRITE_PLAYER,				
+				sensor: true,
+				vx: 0,
+				vy: 0,
+				amount: 50,
+				gravity: 0
+			});
+
+			this.on("sensor");
+		},
+
+		sensor: function(colObj) {
+			// Increment the score.
+			if (this.p.amount) {
+				colObj.p.score += this.p.amount;
+				Q.stageScene('hud', 3, colObj.p);
+			}
+			//Q.audio.play('coin.mp3');
+			this.destroy();
+		}
+	});
+
 	Q.Sprite.extend("Enemy", {
 		init: function(p,defaults) {
 
@@ -222,7 +251,7 @@ window.addEventListener("load",function() {
 	Q.Enemy.extend("Bloopa", {
 		init: function(p) {
 			this._super(p,{
-				sheet: "bloopa",  // Setting a sprite sheet sets sprite width and height
+				sheet: "bloopa",  
 				sprite: "bloopa",
 				vx: 0,
 				vy: -150,
@@ -271,7 +300,7 @@ window.addEventListener("load",function() {
 	Q.Enemy.extend("Goomba", {
 		init: function(p) {
 			this._super(p,{
-				sheet: "goomba",  // Setting a sprite sheet sets sprite width and height
+				sheet: "goomba",  
 				sprite: "goomba"
 			});
 		}
@@ -328,11 +357,12 @@ window.addEventListener("load",function() {
 		container.fit(20);
 	});
 
-	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png, coin.png, coin.json", function() {
+	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png, coin.png, coin.json, princess.png", function() {
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("coin.png","coin.json");
+		Q.compileSheets("princess.png");
 		Q.animations("mario_small", {
 			walk_right: { frames: [0,1,2], rate: 1/10, flip: false, loop: true },
 			walk_left: { frames:  [0,1,2], rate: 1/10, flip:"x", loop: true },
@@ -366,5 +396,22 @@ window.addEventListener("load",function() {
 				document.getElementById("loading").remove();
 			}
 		}
+	});
+
+	Q.scene('endGame',function(stage) {
+		var container = stage.insert(new Q.UI.Container({
+			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
+		}));
+
+		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
+													   label: "Play Again" }))         
+		var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, 
+													label: stage.options.label }));
+		button.on("click",function() {
+			Q.clearStages();			
+			Q.stageScene('levelOK');
+		});
+
+		container.fit(20);
 	});
 });

@@ -35,6 +35,14 @@
    </properties>
   </tile>
  </tileset>
+ <tileset firstgid="96" name="princess" tilewidth="30" tileheight="48">
+  <image source="../images/princess.png" width="30" height="48"/>
+  <tile id="0">
+   <properties>
+    <property name="Class" value="Princess"/>
+   </properties>
+  </tile>
+ </tileset>
  <imagelayer name="background" width="60" height="18">
   <image source="../images/bg.png"/>
  </imagelayer>
@@ -1127,10 +1135,15 @@
  </layer>
  <objectgroup name="Capa de Objetos 1" width="60" height="18">
   <object name="goomba" gid="78" x="549" y="542"/>
-  <object gid="93" x="190" y="541"/>
-  <object gid="93" x="162" y="542"/>
-  <object gid="93" x="128" y="542"/>
-  <object gid="50" x="128" y="543"/>
-  <object gid="90" x="272" y="507"/>
+  <object name="bloopa" gid="90" x="1392" y="437"/>
+  <object name="mario" gid="50" x="126" y="543"/>
+  <object name="coin1" gid="93" x="493" y="478"/>
+  <object name="coin2" gid="93" x="540" y="477"/>
+  <object name="coin3" gid="93" x="586" y="476"/>
+  <object name="coin4" gid="93" x="631" y="475"/>
+  <object gid="96" x="201" y="540"/>
+  <object gid="96" x="267" y="538"/>
+  <object gid="96" x="331" y="530"/>
+  <object gid="96" x="382" y="549"/>
  </objectgroup>
 </map>
