@@ -226,11 +226,10 @@ window.addEventListener("load",function() {
 				sprite: "bloopa",
 				vx: 0,
 				vy: -150,
-				rangeY: 200,
+				rangeY: 100,
 				gravity: 0,
 				jumpSpeed: -250
 			});
-			this.add('2d');
 
 			this.p.initialY = this.p.y;
 
@@ -246,6 +245,7 @@ window.addEventListener("load",function() {
 					this.destroy();
 				}
 			});
+			this.play('jump');
 		},
 		step: function(dt) {
 			if(this.p.dead) {
@@ -258,16 +258,13 @@ window.addEventListener("load",function() {
 				return;
 			}
 
-			if(this.p.y - this.p.initialY >= this.p.rangeY && this.p.vy > 0) {
-				console.log("11");
+			if(this.p.y>= this.p.initialY && this.p.vy > 0) {				
 				this.p.vy = -this.p.vy;
 			} 
-			else if(-this.p.y + this.p.initialY >= this.p.rangeY && this.p.vy < 0) {
-				console.log("22");
+			else if(this.p.y < this.p.initialY - this.p.rangeY && this.p.vy < 0) {				
 				this.p.vy = -this.p.vy;
 			} 
 
-			this.play('jump');
 		}
 	});
 

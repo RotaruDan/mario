@@ -1126,11 +1126,11 @@
   </data>
  </layer>
  <objectgroup name="Capa de Objetos 1" width="60" height="18">
-  <object name="mario" gid="50" x="231" y="426"/>
   <object name="goomba" gid="78" x="549" y="542"/>
-  <object gid="90" x="271" y="544"/>
   <object gid="93" x="190" y="541"/>
   <object gid="93" x="162" y="542"/>
   <object gid="93" x="128" y="542"/>
+  <object gid="50" x="128" y="543"/>
+  <object gid="90" x="272" y="507"/>
  </objectgroup>
 </map>
