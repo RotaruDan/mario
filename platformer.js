@@ -74,12 +74,12 @@ window.addEventListener("load",function() {
 			this.dying = true;
 			this.play('die');
 			this.animate({ x: this.p.x, y:  this.p.y - 100 }, 
-							 0.35, 
-							 Q.Easing.Quadratic.Out)
+						 0.35, 
+						 Q.Easing.Quadratic.Out)
 			.chain({ x: this.p.x, y: this.p.y + 250 }, 
-							 0.65, 
-							 { callback: function() { Q.stageScene("endGame",1, { label: "You lose!" });
-													 this.destroy(); } });
+				   0.65, 
+				   { callback: function() { Q.stageScene("endGame",1, { label: "You lose!" });
+										   this.destroy(); } });
 		},
 
 		enemyHit: function(data) {
@@ -177,28 +177,33 @@ window.addEventListener("load",function() {
 		init: function(p) {
 
 			this._super(p, {
-				sheet: "pincess",  
-				sprite: "princess",
+				sheet: 'princess',
+				sprite: 'princess',
 				type: Q.SPRITE_PRINCESS,
 				collisionMask: Q.SPRITE_PLAYER,				
 				sensor: true,
 				vx: 0,
 				vy: 0,
-				amount: 50,
 				gravity: 0
 			});
-
+			
+			this.add('2d, tween');
 			this.on("sensor");
 		},
 
 		sensor: function(colObj) {
-			// Increment the score.
-			if (this.p.amount) {
-				colObj.p.score += this.p.amount;
-				Q.stageScene('hud', 3, colObj.p);
+			// Win the game
+			if(colObj.isA("Player") && this.p.sensor) {
+				this.p.sensor = false;				
+				this.animate({ x: this.p.x, y:  0 }, 
+						 1, 
+						 Q.Easing.Quadratic.InOut, { callback: function() { Q.stageScene("endGame",1, { label: "You won!" });
+										   this.destroy(); colObj.destroy() } });
+				colObj.animate({ x: colObj.p.x, y:  0 }, 
+						 1, 
+						 Q.Easing.Quadratic.InOut);
 			}
 			//Q.audio.play('coin.mp3');
-			
 		}
 	});
 
@@ -287,6 +292,7 @@ window.addEventListener("load",function() {
 			});
 			this.play('jump');
 		},
+		
 		step: function(dt) {
 			if(this.p.dead) {
 				this.del('2d, aiBounce');
@@ -377,7 +383,6 @@ window.addEventListener("load",function() {
 		Q.compileSheets("bloopa.png","bloopa.json");
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("coin.png","coin.json");
-		Q.compileSheets("princess.png");
 		Q.animations("mario_small", {
 			walk_right: { frames: [0,1,2], rate: 1/10, flip: false, loop: true },
 			walk_left: { frames:  [0,1,2], rate: 1/10, flip:"x", loop: true },

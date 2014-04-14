@@ -1141,9 +1141,9 @@
   <object name="coin2" gid="93" x="540" y="477"/>
   <object name="coin3" gid="93" x="586" y="476"/>
   <object name="coin4" gid="93" x="631" y="475"/>
-  <object gid="96" x="201" y="540"/>
-  <object gid="96" x="267" y="538"/>
-  <object gid="96" x="331" y="530"/>
-  <object gid="96" x="382" y="549"/>
+  <object gid="96" x="1973" y="476"/>
+  <object gid="93" x="1516" y="406"/>
+  <object gid="93" x="1561" y="376"/>
+  <object gid="93" x="1601" y="406"/>
  </objectgroup>
 </map>
