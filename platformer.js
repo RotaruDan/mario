@@ -207,6 +207,33 @@ window.addEventListener("load",function() {
 		}
 	});
 
+	Q.component("defaultEnemy", {
+		added: function() {
+			this.entity.add("2d, aiBounce, animation");
+			this.entity.on("bump.top",this,"die");
+			this.entity.on("hit.sprite",this,"hit");
+		},
+
+		hit: function(col) {
+			if(col.obj.isA("Player") && !this.entity.p.dead) {
+				col.obj.trigger('enemy.hit', {"enemy":this,"col":col});
+				////Q.audio.play('hit.mp3');
+			}
+		},
+
+		die: function(col) {
+			if(col.obj.isA("Player")) {
+				//Q.audio.play('coin.mp3');
+				this.entity.p.vx=this.entity.p.vy=0;
+				this.entity.play('dead');
+				this.entity.p.dead = true;
+				var that = this;
+				col.obj.p.vy = -300;
+				this.entity.p.deadTimer = 0;
+			}
+		}  
+	});
+
 	Q.Sprite.extend("Enemy", {
 		init: function(p,defaults) {
 
@@ -218,9 +245,7 @@ window.addEventListener("load",function() {
 				collisionMask: Q.SPRITE_DEFAULT
 			}));
 
-			this.add("2d, aiBounce, animation");
-			this.on("bump.top",this,"die");
-			this.on("hit.sprite",this,"hit");
+			this.add('defaultEnemy');
 		},
 
 		step: function(dt) {
@@ -242,25 +267,6 @@ window.addEventListener("load",function() {
 			p.y += p.vy * dt;
 
 			this.play('walk');
-		},
-
-		hit: function(col) {
-			if(col.obj.isA("Player") && !this.p.dead) {
-				col.obj.trigger('enemy.hit', {"enemy":this,"col":col});
-				////Q.audio.play('hit.mp3');
-			}
-		},
-
-		die: function(col) {
-			if(col.obj.isA("Player")) {
-				//Q.audio.play('coin.mp3');
-				this.p.vx=this.p.vy=0;
-				this.play('dead');
-				this.p.dead = true;
-				var that = this;
-				col.obj.p.vy = -300;
-				this.p.deadTimer = 0;
-			}
 		}
 	});
 
@@ -278,18 +284,6 @@ window.addEventListener("load",function() {
 
 			this.p.initialY = this.p.y;
 
-			this.on("bump.left,bump.right,bump.bottom",function(collision) {
-				if(collision.obj.isA("Player")) { 
-					collision.obj.resetLevel();
-				}
-			});
-			this.on("bump.top",function(collision) {
-				if(collision.obj.isA("Player")) { 
-					collision.obj.p.vy = -100;
-					if(!this.p.dead )
-						this.p.dead = true;
-				}
-			});
 			this.play('jump');
 		},
 
@@ -303,14 +297,13 @@ window.addEventListener("load",function() {
 				}
 				return;
 			}
-
+			
 			if(this.p.y>= this.p.initialY && this.p.vy > 0) {				
 				this.p.vy = -this.p.vy;
 			} 
 			else if(this.p.y < this.p.initialY - this.p.rangeY && this.p.vy < 0) {				
 				this.p.vy = -this.p.vy;
-			} 
-
+			}
 		}
 	});
 
