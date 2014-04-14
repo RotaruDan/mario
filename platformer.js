@@ -39,18 +39,18 @@ window.addEventListener("load",function() {
 
 				jumpSpeed: -400,
 				speed: 290,
-				strength: 100,
+				strength: 25,
 				score: 0,
 				type: Q.SPRITE_PLAYER,
 				collisionMask: Q.SPRITE_DEFAULT | Q.SPRITE_COLLECTABLE
 			});
 
+			this.dying= false;
 			this.p.points = this.p.standingPoints;
 
 			this.add('2d, platformerControls, animation, tween');
 
 			this.on("bump.top","breakTile");
-
 			this.on("enemy.hit","enemyHit");
 			this.on("jump");
 			this.on("jumped");
@@ -69,8 +69,17 @@ window.addEventListener("load",function() {
 		},
 
 		resetLevel: function() {
-			Q.stageScene("endGame",1, { label: "Game Over!" }); 
-			this.destroy();
+			if(this.dying)
+				return;
+			this.dying = true;
+			this.play('die');
+			this.animate({ x: this.p.x, y:  this.p.y - 100 }, 
+							 0.35, 
+							 Q.Easing.Quadratic.Out)
+			.chain({ x: this.p.x, y: this.p.y + 250 }, 
+							 0.65, 
+							 { callback: function() { Q.stageScene("endGame",1, { label: "You lose!" });
+													 this.destroy(); } });
 		},
 
 		enemyHit: function(data) {
@@ -112,6 +121,8 @@ window.addEventListener("load",function() {
 		},
 
 		step: function(dt) {
+			if(this.dying)
+				return;
 			var processed = false;
 
 			if(!processed) { 
@@ -187,7 +198,7 @@ window.addEventListener("load",function() {
 				Q.stageScene('hud', 3, colObj.p);
 			}
 			//Q.audio.play('coin.mp3');
-			this.destroy();
+			
 		}
 	});
 
@@ -320,6 +331,7 @@ window.addEventListener("load",function() {
 				gravity: 0
 			});
 			this.add('animation');
+			this.add('tween');
 			this.on("sensor");
 			this.play('shine');
 		},
@@ -329,10 +341,13 @@ window.addEventListener("load",function() {
 			// Increment the score.
 			if (this.p.amount) {
 				colObj.p.score += this.p.amount;
+				this.p.amount = false;
 				Q.stageScene('hud', 3, colObj.p);
+				this.animate({ x: this.p.x, y:  this.p.y - 50 }, 
+							 0.2, 
+							 Q.Easing.Quadratic.Out, 
+							 { callback: function() { this.destroy(); } });
 			}
-			//Q.audio.play('coin.mp3');
-			this.destroy();
 		}
 	});
 
@@ -371,7 +386,8 @@ window.addEventListener("load",function() {
 			stand_right: { frames:[0], rate: 1/9, flip: false },
 			stand_left: { frames: [0], rate: 1/9, flip:"x" },
 			duck_right: { frames: [6], rate: 1/9, flip: false },
-			duck_left: { frames:  [6], rate: 1/9, flip: "x" }
+			duck_left: { frames:  [6], rate: 1/9, flip: "x" },
+			die: { frames:  [12], rate: 1/9, flip: false }
 		});
 		var EnemyAnimations = {
 			walk: { frames: [0,1], rate: 1/3, loop: true },
