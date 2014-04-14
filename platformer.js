@@ -186,7 +186,7 @@ window.addEventListener("load",function() {
 				vy: 0,
 				gravity: 0
 			});
-			
+
 			this.add('2d, tween');
 			this.on("sensor");
 		},
@@ -196,12 +196,12 @@ window.addEventListener("load",function() {
 			if(colObj.isA("Player") && this.p.sensor) {
 				this.p.sensor = false;				
 				this.animate({ x: this.p.x, y:  0 }, 
-						 1, 
-						 Q.Easing.Quadratic.InOut, { callback: function() { Q.stageScene("endGame",1, { label: "You won!" });
-										   this.destroy(); colObj.destroy() } });
+							 1, 
+							 Q.Easing.Quadratic.InOut, { callback: function() { Q.stageScene("endGame",1, { label: "You won!" });
+																			   this.destroy(); colObj.destroy() } });
 				colObj.animate({ x: colObj.p.x, y:  0 }, 
-						 1, 
-						 Q.Easing.Quadratic.InOut);
+							   1, 
+							   Q.Easing.Quadratic.InOut);
 			}
 			//Q.audio.play('coin.mp3');
 		}
@@ -280,19 +280,19 @@ window.addEventListener("load",function() {
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Player")) { 
-					Q.stageScene("endGame",1, { label: "Game Over" }); 
-					collision.obj.destroy();
+					collision.obj.resetLevel();
 				}
 			});
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Player")) { 
 					collision.obj.p.vy = -100;
-					this.destroy();
+					if(!this.p.dead )
+						this.p.dead = true;
 				}
 			});
 			this.play('jump');
 		},
-		
+
 		step: function(dt) {
 			if(this.p.dead) {
 				this.del('2d, aiBounce');
