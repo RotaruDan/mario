@@ -39,8 +39,6 @@ window.addEventListener("load",function() {
 
 				jumpSpeed: -400,
 				speed: 290,
-				strength: 25,
-				score: 0,
 				type: Q.SPRITE_PLAYER,
 				collisionMask: Q.SPRITE_DEFAULT | Q.SPRITE_COLLECTABLE
 			});
@@ -50,6 +48,7 @@ window.addEventListener("load",function() {
 
 			this.add('2d, platformerControls, animation, tween');
 
+			Q.state.on("change.lives", this, "lives");
 			this.on("bump.top","breakTile");
 			this.on("enemy.hit","enemyHit");
 			this.on("jump");
@@ -99,10 +98,12 @@ window.addEventListener("load",function() {
 				this.p.x +=15;
 				this.p.y -=15;
 			}
-			this.p.strength -= 25;
-			Q.stageScene('hud', 1, this.p);
-			if (this.p.strength == 0) {
-				this.resetLevel();
+			Q.state.dec("lives", 1);
+		},
+
+		lives: function(lives) {
+			if(lives == 0){
+				this.resetLevel();				
 			}
 		},
 
@@ -126,50 +127,44 @@ window.addEventListener("load",function() {
 		step: function(dt) {
 			if(this.dying)
 				return;
-			var processed = false;
+			this.p.gravity = 1;
 
-			if(!processed) { 
-				this.p.gravity = 1;
-
-				if(Q.inputs['down']) {
-					this.p.ignoreControls = true;
-					this.play("duck_" + this.p.direction);
-					if(this.p.landed > 0) {
-						this.p.vx = this.p.vx * (1 - dt*2);
-					}
-					this.p.points = this.p.duckingPoints;
-				} else {
-					this.p.ignoreControls = false;
-					this.p.points = this.p.standingPoints;
-
-					if(this.p.vx > 0) {
-						if(this.p.landed > 0) {
-							this.play("walk_right");
-						} else {
-							this.play("jump_right");
-						}
-						this.p.direction = "right";
-					} else if(this.p.vx < 0) {
-						if(this.p.landed > 0) {
-							this.play("walk_left");
-						} else {
-							this.play("jump_left");
-						}
-						this.p.direction = "left";
-					} else {
-						this.play("stand_" + this.p.direction);
-					}
-
+			if(Q.inputs['down']) {
+				this.p.ignoreControls = true;
+				this.play("duck_" + this.p.direction);
+				if(this.p.landed > 0) {
+					this.p.vx = this.p.vx * (1 - dt*2);
 				}
+				this.p.points = this.p.duckingPoints;
+			} else {
+				this.p.ignoreControls = false;
+				this.p.points = this.p.standingPoints;
+
+				if(this.p.vx > 0) {
+					if(this.p.landed > 0) {
+						this.play("walk_right");
+					} else {
+						this.play("jump_right");
+					}
+					this.p.direction = "right";
+				} else if(this.p.vx < 0) {
+					if(this.p.landed > 0) {
+						this.play("walk_left");
+					} else {
+						this.play("jump_left");
+					}
+					this.p.direction = "left";
+				} else {
+					this.play("stand_" + this.p.direction);
+				}
+
 			}
 
-
-
-			if(this.p.y > 1000) {
+			if(this.p.y > 600) {
 				this.stage.unfollow();
 			}
 
-			if(this.p.y > 2000) {
+			if(this.p.y > 1000) {
 				this.resetLevel();
 			}
 		}
@@ -329,7 +324,7 @@ window.addEventListener("load",function() {
 				sensor: true,
 				vx: 0,
 				vy: 0,
-				amount: 50,
+				amount: true,
 				gravity: 0
 			});
 			this.add('animation');
@@ -343,9 +338,9 @@ window.addEventListener("load",function() {
 			// Increment the score.
 			if (this.p.amount) {
 				Q.audio.play('coin.mp3');
-				colObj.p.score += this.p.amount;
+				Q.state.inc("score", 1);
+				console.log
 				this.p.amount = false;
-				Q.stageScene('hud', 1, colObj.p);
 				this.animate({ x: this.p.x, y:  this.p.y - 50 }, 
 							 0.2, 
 							 Q.Easing.Quadratic.Out, 
@@ -355,6 +350,7 @@ window.addEventListener("load",function() {
 	});
 
 	Q.scene("levelOK",function(stage) {
+		Q.state.reset({ score: 0, lives: 1 });
 		Q.stageTMX("levelOK.tmx",stage);
 		stage.add("viewport").follow(Q("Player").first(), { x:true, y:false });
 		stage.centerOn(160, 372);
@@ -371,7 +367,7 @@ window.addEventListener("load",function() {
 		}, function() {
 			Q.clearStages();			
 			Q.stageScene("levelOK"); 
-			Q.stageScene('hud', 1, Q('Player').first().p);
+			Q.stageScene('hud', 1);
 		}, {keyActionName: 'confirm' }));
 		var container = stage.insert(new Q.UI.Container({
 			x: 0, y: 0
@@ -381,16 +377,29 @@ window.addEventListener("load",function() {
 		container.fit(20);
 	});
 
+	Q.UI.Text.extend("Score",{ 
+		init: function(p) {
+			this._super({
+				label: "Score: 0",
+				x: 60,
+				y: 20,
+				color: 'white'
+			});
+
+			Q.state.on("change.score",this,"score");
+		},
+
+		score: function(score) {
+			this.p.label = "Score: " + score;
+		}
+	});
+
 	Q.scene('hud',function(stage) {
 		var container = stage.insert(new Q.UI.Container({
-			x: 20, y: 0
+			x: 0, y: 0
 		}));
 
-		var label = container.insert(new Q.UI.Text({x:200, y: 20,
-													label: "Puntos: " + stage.options.score, color: "white" }));
-
-		var strength = container.insert(new Q.UI.Text({x:50, y: 20,
-													   label: "Vida: " + stage.options.strength + '%', color: "white" }));
+		var label = container.insert(new Q.Score());
 
 		container.fit(20);
 	});
