@@ -349,29 +349,7 @@ window.addEventListener("load",function() {
 			}
 		}
 	});
-	Q.Sprite.extend("MainTitle", {
-		init: function(p) {
-			this._super(p,{
-				asset: "mainTitle.png",
-				x: 160,
-				y: 240,
-				gravity: 0
-			});
-			this.started = false;
-			
-		},
-		step: function(dt) {
-			if(Q.inputs['confirm']) {
-				if(!this.started){
-					this.started = true;	
-					Q.clearStages();			
-					Q.stageScene("levelOK"); 
-					Q.stageScene('hud', 1, Q('Player').first().p);
-				}
-			}
-		}
-	});
-	
+
 	Q.scene("levelOK",function(stage) {
 		Q.stageTMX("levelOK.tmx",stage);
 
@@ -380,20 +358,21 @@ window.addEventListener("load",function() {
 	});
 
 	Q.scene('initialScreen', function(stage) {
-		var bg = stage.insert(new Q.MainTitle()); 
 
-		var container = stage.insert(new Q.UI.Container({
-			x: 0, y: 0
-		}));
-
-		var button = container.insert(new Q.UI.Button({ x: 160, y: 280, fill: "#CCCCCC",
-													   label: "Play!" }))
-
-		button.on("click", function() {        
+		stage.insert(new Q.UI.Button({
+			asset: "mainTitle.png",
+			y: Q.height/2,
+			x: Q.width/2
+		}, function() {
 			Q.clearStages();			
 			Q.stageScene("levelOK"); 
 			Q.stageScene('hud', 1, Q('Player').first().p);
-		});
+		}, {keyActionName: 'confirm' }));
+		var container = stage.insert(new Q.UI.Container({
+			x: 0, y: 0
+		}));
+		var label = container.insert(new Q.UI.Text({x:120, y: 40,
+													label: "Press the screen\nor confirm to start!", color: "white" }));
 		container.fit(20);
 	});
 
