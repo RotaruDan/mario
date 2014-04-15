@@ -78,7 +78,7 @@ window.addEventListener("load",function() {
 						 Q.Easing.Quadratic.Out)
 			.chain({ x: this.p.x, y: this.p.y + 250 }, 
 				   0.65, 
-				   { callback: function() { Q.stageScene("endGame",1, { label: "You lose!" });
+				   { callback: function() { Q.stageScene("endGame",2, { label: "You lose!" });
 										   this.destroy(); } });
 		},
 
@@ -97,7 +97,7 @@ window.addEventListener("load",function() {
 				this.p.y -=15;
 			}
 			this.p.strength -= 25;
-			Q.stageScene('hud', 3, this.p);
+			Q.stageScene('hud', 1, this.p);
 			if (this.p.strength == 0) {
 				this.resetLevel();
 			}
@@ -197,7 +197,7 @@ window.addEventListener("load",function() {
 				this.p.sensor = false;				
 				this.animate({ x: this.p.x, y:  0 }, 
 							 1, 
-							 Q.Easing.Quadratic.InOut, { callback: function() { Q.stageScene("endGame",1, { label: "You won!" });
+							 Q.Easing.Quadratic.InOut, { callback: function() { Q.stageScene("endGame", 2, { label: "You won!" });
 																			   this.destroy(); colObj.destroy() } });
 				colObj.animate({ x: colObj.p.x, y:  0 }, 
 							   1, 
@@ -297,7 +297,7 @@ window.addEventListener("load",function() {
 				}
 				return;
 			}
-			
+
 			if(this.p.y>= this.p.initialY && this.p.vy > 0) {				
 				this.p.vy = -this.p.vy;
 			} 
@@ -341,7 +341,7 @@ window.addEventListener("load",function() {
 			if (this.p.amount) {
 				colObj.p.score += this.p.amount;
 				this.p.amount = false;
-				Q.stageScene('hud', 3, colObj.p);
+				Q.stageScene('hud', 1, colObj.p);
 				this.animate({ x: this.p.x, y:  this.p.y - 50 }, 
 							 0.2, 
 							 Q.Easing.Quadratic.Out, 
@@ -349,12 +349,52 @@ window.addEventListener("load",function() {
 			}
 		}
 	});
-
+	Q.Sprite.extend("MainTitle", {
+		init: function(p) {
+			this._super(p,{
+				asset: "mainTitle.png",
+				x: 160,
+				y: 240,
+				gravity: 0
+			});
+			this.started = false;
+			
+		},
+		step: function(dt) {
+			if(Q.inputs['confirm']) {
+				if(!this.started){
+					this.started = true;	
+					Q.clearStages();			
+					Q.stageScene("levelOK"); 
+					Q.stageScene('hud', 1, Q('Player').first().p);
+				}
+			}
+		}
+	});
+	
 	Q.scene("levelOK",function(stage) {
 		Q.stageTMX("levelOK.tmx",stage);
 
 		stage.add("viewport").follow(Q("Player").first(), { x:true, y:false });
 		stage.centerOn(160, 372);
+	});
+
+	Q.scene('initialScreen', function(stage) {
+		var bg = stage.insert(new Q.MainTitle()); 
+
+		var container = stage.insert(new Q.UI.Container({
+			x: 0, y: 0
+		}));
+
+		var button = container.insert(new Q.UI.Button({ x: 160, y: 280, fill: "#CCCCCC",
+													   label: "Play!" }))
+
+		button.on("click", function() {        
+			Q.clearStages();			
+			Q.stageScene("levelOK"); 
+			Q.stageScene('hud', 1, Q('Player').first().p);
+		});
+		container.fit(20);
 	});
 
 	Q.scene('hud',function(stage) {
@@ -371,7 +411,7 @@ window.addEventListener("load",function() {
 		container.fit(20);
 	});
 
-	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png, coin.png, coin.json, princess.png", function() {
+	Q.loadTMX("levelOK.tmx, mario_small.json, mario_small.png, bloopa.json, bloopa.png, goomba.json, goomba.png, coin.png, coin.json, princess.png, mainTitle.png", function() {
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
 		Q.compileSheets("goomba.png","goomba.json");
@@ -399,8 +439,7 @@ window.addEventListener("load",function() {
 			shine: { frames: [0,1,2], rate: 1/2, loop: true }
 		});
 		Q.animations("goomba", EnemyAnimations);
-		Q.stageScene("levelOK");
-		Q.stageScene('hud', 3, Q('Player').first().p);
+		Q.stageScene("initialScreen");
 
 	}, {
 		progressCallback: function(loaded,total) {
@@ -423,7 +462,7 @@ window.addEventListener("load",function() {
 													label: stage.options.label }));
 		button.on("click",function() {
 			Q.clearStages();			
-			Q.stageScene('levelOK');
+			Q.stageScene('initialScreen');
 		});
 
 		container.fit(20);
