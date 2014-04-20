@@ -43,13 +43,16 @@ window.addEventListener("load",function() {
 				collisionMask: Q.SPRITE_DEFAULT | Q.SPRITE_COLLECTABLE
 			});
 
+			this.resetting = false;
+			this.initialX = this.p.x + this.p.w/2;
+			this.initialY = this.p.y;
+
 			this.dying= false;
 			this.p.points = this.p.standingPoints;
 
 			this.add('2d, platformerControls, animation, tween');
 
 			Q.state.on("change.lives", this, "lives");
-			this.on("bump.top","breakTile");
 			this.on("enemy.hit","enemyHit");
 			this.on("jump");
 			this.on("jumped");
@@ -85,25 +88,24 @@ window.addEventListener("load",function() {
 		},
 
 		enemyHit: function(data) {
-			var col = data.col;
-			var enemy = data.enemy;
-			this.p.vy = -150;
-			if (col.normalX == 1) {
-				// Hit from left.
-				this.p.x -=15;
-				this.p.y -=15;
-			}
-			else {
-				// Hit from right;
-				this.p.x +=15;
-				this.p.y -=15;
-			}
+			if(this.dying || this.resetting)
+				return;
+			this.resettting = true;
 			Q.state.dec("lives", 1);
 		},
 
 		lives: function(lives) {
 			if(lives == 0){
 				this.resetLevel();				
+			} else {
+				this.p.vy = 0;
+				this.p.vx = 0;
+				this.p.x = this.initialX;
+				this.p.y = this.initialY;
+				this.resetting = false;
+				this.p.ignoreControls = false;
+				this.p.points = this.p.standingPoints;
+				this.stage.follow(this, { x:true, y:false });
 			}
 		},
 
@@ -116,17 +118,10 @@ window.addEventListener("load",function() {
 			}
 		},
 
-		breakTile: function(col) {
-			if(col.obj.isA("TileLayer")) {
-				if(col.tile == 24) { col.obj.setTile(col.tileX,col.tileY, 36); }
-				else if(col.tile == 36) { col.obj.setTile(col.tileX,col.tileY, 24); }
-			}
-			////Q.audio.play('coin.mp3');
-		},
-
 		step: function(dt) {
 			if(this.dying)
 				return;
+
 			this.p.gravity = 1;
 
 			if(Q.inputs['down']) {
@@ -160,12 +155,16 @@ window.addEventListener("load",function() {
 
 			}
 
+
+			if(this.resetting)
+				return;
+
 			if(this.p.y > 600) {
 				this.stage.unfollow();
 			}
 
 			if(this.p.y > 1000) {
-				this.resetLevel();
+				this.enemyHit();
 			}
 		}
 	});
@@ -222,10 +221,8 @@ window.addEventListener("load",function() {
 
 		die: function(col) {
 			if(col.obj.isA("Player")) {
-				this.entity.p.vx=this.entity.p.vy=0;
 				this.entity.play('dead');
 				this.entity.p.dead = true;
-				var that = this;
 				col.obj.p.vy = -300;
 				this.entity.p.deadTimer = 0;
 			}
@@ -295,11 +292,15 @@ window.addEventListener("load",function() {
 				}
 				return;
 			}
-
-			if(this.p.y>= this.p.initialY && this.p.vy > 0) {				
+			if(this.p.vy == 0){
+				this.p.vy = -150;
+			}
+			if(this.p.y >= this.p.initialY) {		
+				this.p.y = this.p.initialY;
 				this.p.vy = -this.p.vy;
 			} 
-			else if(this.p.y < this.p.initialY - this.p.rangeY && this.p.vy < 0) {				
+			else if(this.p.y + this.p.rangeY < this.p.initialY) {	
+				this.p.y = this.p.initialY - this.p.rangeY;
 				this.p.vy = -this.p.vy;
 			}
 		}
@@ -350,7 +351,7 @@ window.addEventListener("load",function() {
 	});
 
 	Q.scene("levelOK",function(stage) {
-		Q.state.reset({ score: 0, lives: 1 });
+		Q.state.reset({ score: 0, lives: 3 });
 		Q.stageTMX("levelOK.tmx",stage);
 		stage.add("viewport").follow(Q("Player").first(), { x:true, y:false });
 		stage.centerOn(160, 372);
@@ -394,12 +395,30 @@ window.addEventListener("load",function() {
 		}
 	});
 
+	Q.UI.Text.extend("Lives",{ 
+		init: function(p) {
+			this._super({
+				label: "Lives: 3",
+				x: 260,
+				y: 20,
+				color: 'white'
+			});
+
+			Q.state.on("change.lives",this,"lives");
+		},
+
+		lives: function(lives) {
+			this.p.label = "Lives: " + lives;
+		}
+	});
+
 	Q.scene('hud',function(stage) {
 		var container = stage.insert(new Q.UI.Container({
 			x: 0, y: 0
 		}));
 
-		var label = container.insert(new Q.Score());
+		container.insert(new Q.Score());
+		container.insert(new Q.Lives());
 
 		container.fit(20);
 	});
@@ -451,13 +470,14 @@ window.addEventListener("load",function() {
 		}));
 
 		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
-													   label: "Play Again" }))         
-		var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, 
+													   label: "Play Again" }, 
+													  function() {
+														  Q.clearStages();			
+														  Q.stageScene('initialScreen');
+													  },
+													  {keyActionName: 'confirm' }));         
+		container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, 
 													label: stage.options.label }));
-		button.on("click",function() {
-			Q.clearStages();			
-			Q.stageScene('initialScreen');
-		});
 
 		container.fit(20);
 	});
